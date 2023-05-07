@@ -14,7 +14,7 @@ function setup()
   createCanvas(5000, 5000); //windowsWidth, WindowsHeight
  // background(220);
   
-  lManager = new layoutManager(300,100);
+  lManager = new layoutManager(400,50);
   lManager.addLoop();
   lManager.addLoop();
   lManager.addModule();
@@ -102,4 +102,10 @@ function AddProbe()
 function myInputEvent() {
   console.log('you are typing: ', this.value());
   console.log('Object: ', this.value());
+}
+function plusObject()
+{
+  let nid=this.id();
+  let sp=split(nid, '_');
+ lManager.eventID(int(sp[0]),int(sp[1]));
 }
