@@ -7,12 +7,14 @@ class layoutManager
       this.posX=x;
       this.posY=y; 
       this.spacingX=20;
-      this.spacingY=10;
-      this.indexDclick=[];
+      this.spacingY=20;
+      this.eManager = new editorManager(0,0);
+      this.table = new TableUI(0,this.eManager.h);
+      this.indexDclick=false;
     }
     addLoop()
     {
-      let l=new Looper(this.posX,this.posY,580);
+      let l=new Looper(this.posX,this.posY);
       this.Object.push(l);
       this.updateID();
     }
@@ -28,7 +30,42 @@ class layoutManager
       this.Object.push(m);
       this.updateID();
     }
-    
+    updateObj2Table()
+    {
+      for(let k=0;k<this.Object.length;k++)
+      {
+         if(this.Object[k].isDoubleSelected)
+         {
+            this.table.UpdateTable(this.Object[k]);
+         }
+      }
+    }
+    updateTable2Obj()
+    {
+      for(let k=0;k<this.Object.length;k++)
+      {
+         if(this.Object[k].isDoubleSelected)
+         {
+           this.table.updateObj(this.Object[k]);
+         }
+      }
+      this.update();
+    }
+    generateTable()
+    {
+      this.table.destruct();
+      for(let k=0;k<this.Object.length;k++)
+      {
+         if(this.Object[k].isDoubleSelected)
+         {
+           this.table.AddObject(this.Object[k]);
+         }
+      }
+    }
+    removeTable()
+    {
+       this.table.destruct(); 
+    }
     show()
     {
       let Gap=this.posY;
@@ -39,65 +76,90 @@ class layoutManager
       
       for(let k=this.Object.length-1;k>=0;k--)
       {
-         Gap+=this.Object[k].showGap(k*this.spacingX,Gap)+this.spacingY; 
+           Gap+=this.Object[k].showGap(k*this.spacingX,Gap)+this.spacingY; 
         // print(Gap)
       }
+      //this.generateTable()
+      // 
+     // let GapTable= this.eManager.l;
+     // GapTable+=this.table.show(0,GapTable,"test");
       
-      for(let k=0;k<this.Object.length;k++)
+    }
+    doubleUnselect()
+    {
+       for(let k=0;k<this.Object.length;k++)
       {
-        this.Object[k].showTable(0,0);
+        //this.Object[k].unselect(); 
+        this.Object[k].doubleUnselect();
       }
-      
-      
     }
     unselect()
     {
       for(let k=0;k<this.Object.length;k++)
       {
-        this.Object[k].unselect();    
+        this.Object[k].unselect(); 
+        //this.Object[k].doubleUnselect();
       }
     }
-    isClick(moX,moY)
+    isClick(moX,moY,ctr_key)
     {
+      let check=false;
       for(let k=0;k<this.Object.length;k++)
       {
         if(!this.Object[k].childSelected)
         {
-              this.Object[k].isSelected=this.Object[k].isClick(moX,moY);
+            if(this.Object[k].isClick(moX,moY))
+            {
+                this.Object[k].select_();
+              check=true;
+            }
+            else
+            {
+              if(!ctr_key)
+              {  
+                this.Object[k].unselect();
+              }
+           }
         }
         
       }
+      return check;
     }
-    isDoubleClick(moX,moY)
+    isDoubleClick(moX,moY,ctr_key)
     {
-      this.indexDclick=[];
+      this.indexDclick=false;
+   
       for(let k=0;k<this.Object.length;k++)
       {      
           if(this.Object[k].isDoubleClick(moX,moY))
           {
               this.Object[k].doubleSelect_();
-              this.indexDclick=k;
+              this.indexDclick=true;
+           
           }
-          else
+         else
           {
-            this.Object[k].doubleUnselect();
+            if(!ctr_key)
+            {  
+              this.Object[k].doubleUnselect();
+            }
           }
         
       }
+      if(this.indexDclick)this.generateTable();
+      else this.removeTable();
+      return this.indexDclick;
     }
     dragged(dX,dY,cX,cY)
     {
       let listD=[];
       for(let k=0;k<this.Object.length;k++)
       {
-        
           if(this.Object[k].isSelected||this.Object[k].childSelected)
           {
             this.Object[k].dragged(dX,dY);
             listD.push(k);
           }
-        
-
       }
       for(let k=0;k<this.Object.length;k++)
       {
@@ -127,9 +189,22 @@ class layoutManager
     deleteSelected()
     {
       //print(this.indexDclick)
-      this.Object[this.indexDclick].destruct();
-      this.Object.splice(this.indexDclick,1);
-      this.updateID();
+      for(let k=this.Object.length-1;k>=0;k--)
+      {
+        if(this.Object[k].isDoubleSelected)
+        {
+          if(this.Object[k].destruct())
+          {
+            this.table.destruct();
+            this.Object.splice(k,1);
+            this.updateID();
+          }
+        }
+      }
+    }
+    update()
+    {
+      
     }
     updateID()
     {
@@ -141,6 +216,11 @@ class layoutManager
     eventID(k,n)
     {
       this.Object[k].eventID(n);
+      this.generateTable();
+    }
+    exportPulSeq()
+    {
+      
     }
     
   }
@@ -151,7 +231,7 @@ class editorManager
     {
       this.posX=x;
       this.posY=y;
-      this.h=1600;
+      this.h=320;
       this.l=350;
       this.spacingX=80;
       this.spacingY=40;
@@ -185,6 +265,9 @@ class editorManager
       this.buttonS.position(this.posX+20, this.posY+280);
       this.buttonS.mousePressed(AddProbe);
       
+       this.buttonS = createButton('PulSeq');
+      this.buttonS.position(this.posX+100, this.posY+280);
+      this.buttonS.mousePressed(AddProbe);
     
      
       

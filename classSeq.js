@@ -3,7 +3,7 @@ class Gradient extends GUIObject {
   constructor(x, y, axis, amp) {
     super(x, y, amp, 200);
 
-    this.posY = y;
+    this.posY = y+axis*100;
     this.posX = x;
 
     this.amp = amp;
@@ -15,6 +15,21 @@ class Gradient extends GUIObject {
     this.shiftX = 0;
     this.shiftY = 0;
     this.col = [255, 255, 255];
+    this.nID=newID();
+    this.name="Grad";
+    if(this.axis==2)
+    {
+          this.name="Gx";
+    }
+    else if(this.axis==3)
+    {
+          this.name="Gy";
+    }
+    else if(this.axis==4)
+    {
+          this.name="Gz";
+    }
+    
   }
   show(dx, dy) {
     this.dx = dx;
@@ -42,18 +57,18 @@ class Gradient extends GUIObject {
       this.posY + this.dy
     );
   }
-
+ 
   isClick(moX, moY) {
     if (moX >= this.posX + this.dx && moX <= this.posX + this.l + this.dx) {
       if (
         moY >= this.posY + this.dy &&
-        moY <= this.posY + this.h + this.dy &&
+        moY <= this.posY + this.amp + this.dy &&
         this.amp > 0
       ) {
         return true;
       }
       if (
-        moY >= this.posY + this.h + this.dy &&
+        moY >= this.posY + this.amp + this.dy &&
         moY <= this.posY + this.dy &&
         this.amp < 0
       ) {
@@ -74,6 +89,7 @@ class Gradient extends GUIObject {
     }
   }
   intersect(ob, dx, dy) {
+    if(this.axis!=ob.axis) return false;
     if (this.posX + dx > ob.posX && this.posX + dx < ob.posX + ob.duration) {
       return true;
     }
@@ -84,6 +100,35 @@ class Gradient extends GUIObject {
       return true;
     }
     return false;
+  }
+  getData()
+  {
+    let data=[];
+    data.name =this.name;
+    data.nID=this.nID;
+    data.v1=-this.amp;
+    data.v2=this.ramp1;
+    data.v3=this.flat;
+    data.v4=this.ramp2;
+    data.v5=this.posX;
+    
+    return data;
+  }
+  setData(data)
+  {
+    //print(data.v1)
+    this.name= data.name;
+    this.amp=-Number(data.v1);
+    this.ramp1=Number(data.v2);
+    this.flat=Number(data.v3);
+    this.ramp2=Number(data.v4);
+    this.posX=Number(data.v5);
+    this.duration=this.ramp1+this.flat+this.ramp2;
+    this.update();
+  }
+  update()
+  {
+    
   }
   //let posX,posY;
 }
@@ -99,17 +144,10 @@ class RF extends Gradient {
     this.py = [];
     this.dT = 1;
     this.nPoint = this.duration / this.dT;
-    let tmpx = 0;
-    for (let pt = 0; pt < this.nPoint; pt++) {
-      tmpx = pt * this.dT;
-      this.px[pt] = tmpx;
-      tmpx = pt * this.dT - this.duration / 2;
-      if (tmpx == 0) {
-        this.py[pt] = this.amp;
-      } else {
-        this.py[pt] = (this.amp * sin(tmpx / 8)) / (tmpx / 8);
-      }
-    }
+    this.name="RF";
+   
+    
+    this.update();
     // this.col=[random(0,255),random(0,255),random(0,255)];
   }
   show(dx, dy) {
@@ -145,6 +183,21 @@ class RF extends Gradient {
     }
     return false;
   }
+  update()
+  {
+     let tmpx = 0;
+      this.nPoint = this.duration / this.dT;
+      for (let pt = 0; pt < this.nPoint; pt++) {
+      tmpx = pt * this.dT;
+      this.px[pt] = tmpx;
+      tmpx = pt * this.dT - this.duration / 2;
+      if (tmpx == 0) {
+        this.py[pt] = this.amp;
+      } else {
+        this.py[pt] = (this.amp * sin(tmpx / 8)) / (tmpx / 8);
+      }
+    }
+  }
 }
 
 class ADC extends Gradient {
@@ -154,6 +207,7 @@ class ADC extends Gradient {
     this.ramp1 = 0;
     this.flat = 200;
     this.ramp2 = 0;
+    this.name="ADC";
     // this.col=[random(0,255),random(0,255),random(0,255)];
   }
 }

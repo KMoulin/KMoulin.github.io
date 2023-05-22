@@ -9,14 +9,45 @@ class GUIObject {
     this.childSelected = false;
     this.isDoubleSelected = false;
     this.isLooper = false;
+    this.type=0;
     this.col = [random(0, 255), random(0, 255), random(0, 255)];
     this.dx = 0;
     this.dy = 0;
-    this.table= new TableUI();
-    this.nID=random(0,10000);
+    this.nID=0;
+    this.name="name";
+    this.nameTag = createDiv(this.name);
+    this.nameTag.style('font-size', '16px');
+    this.nameTag.position(this.posX+20,this.posY+10);
+    this.nameTag.hide();
   }
   shapeShow() {
     rect(this.posX + this.dx, this.posY, this.l, this.h);
+  }
+  getLabel()
+  {
+    let dat=[];
+    dat.type_name='Test';
+    dat.l1='Amp';
+    dat.l2='Rup';
+    dat.l3='Rdw';
+    dat.l4='Flat';
+    dat.l5='Start time';
+    return dat;
+  }
+  getData()
+  {
+    let dat=[];
+    dat.name=this.name;
+    dat.v1=12;
+    dat.v2=45;
+    dat.v3=12;
+    dat.v4=33;
+    dat.v5=5;
+    return dat;
+  }
+  setData(dat)
+  {
+    
   }
   show(dx, dy) {
     this.dx = dx;
@@ -38,17 +69,13 @@ class GUIObject {
     }
 
     this.shapeShow();
-
+    this.nameTag.position(this.posX+dx+20, this.posY+10);
     return this.h;
   }
   showGap(dx, dy) {
     return 0;
   }
-  showTable(dx,dy)
-  {
-    return 0;
-  }
-
+ 
   
   isClick(moX, moY) {
     if (moX >= this.posX + this.dx && moX <= this.posX + this.dx + this.l) {
@@ -71,7 +98,7 @@ class GUIObject {
     this.isSelected = true;
   }
   doubleSelect_() {
-    this.isDoubleSelected = true;
+    this.isDoubleSelected = true; 
   }
   doubleUnselect()
   {
@@ -96,10 +123,18 @@ class GUIObject {
     return false;
   }
   destruct()
-  {}
+  {
+    this.nameTag.remove();
+    return true; // We delete the object
+  }
+  update()
+  {
+    this.nameTag.html(String(this.name+"_"+String(this.nID)));
+  }
   updateID(k)
   {
     this.nID=k;
+    this.update();
   }
   eventID(k,n)
   {
@@ -112,6 +147,8 @@ class Probe extends GUIObject {
     this.r = (3 * this.l) / 6;
     this.isLooper = false;
     this.col = color(random(0, 255), random(0, 255), random(0, 255));
+    this.name="Probe";
+    this.type=3;
   }
   shapeShow() {
     rect(
@@ -160,6 +197,29 @@ class Probe extends GUIObject {
     );
   }
 
+   getLabel()
+  {
+    let dat=[];
+    dat.type_name=String(this.name+'_'+this.nID);
+    dat.l1='';
+    dat.l2='';
+    dat.l3='Shot';
+    dat.l4='';
+    dat.l5='';
+    return dat;
+  }
+  getData()
+  {
+    let dat=[];
+    dat.name=String(this.name);
+    dat.v1=1;
+    dat.v2=2;
+    dat.v3=3;
+    dat.v4=4;
+    dat.v5=5;
+    return dat;
+  }
+  
   showGap(dx, dy) {
     if (this.isSelected) {
       fill(255, 204, 0);
@@ -213,8 +273,47 @@ class Looper extends GUIObject {
   constructor(x, y) {
     super(x, y, 40, 200);
     this.isLooper = true;
+    this.name="Loop";
+    this.type=2;
+    this.nameTag.html(String(this.name+" "+String(this.nID)));
+    this.nameTag.show();
+    this.st=0;
+    this.inc=1;
+    this.end=128;
+    this.cur=12;
   }
 
+  getLabel()
+  {
+    let dat=[];
+    dat.type_name=String(this.name+'_'+this.nID);
+    dat.l1='Start';
+    dat.l2='Stop';
+    dat.l3='Incr';
+    dat.l4='';
+    dat.l5='';
+    return dat;
+  }
+  getData()
+  {
+    let dat=[];
+    dat.name=String(this.name);
+    dat.v1=this.st;
+    dat.v2=this.inc;
+    dat.v3=this.end;
+    dat.v4="";
+    dat.v5=this.cur;
+    return dat;
+  }
+   setData(data)
+  {
+    this.name= data.name;
+    this.st=Number(data.v1);
+    this.inc=Number(data.v2);
+    this.end=Number(data.v3);
+    this.cur=Number(data.v5);
+    this.update();
+  }
   showGap(dx, dy) {
     if (this.isSelected) {
       fill(255, 204, 0);
@@ -237,12 +336,18 @@ class Looper extends GUIObject {
     rect(this.posX + this.dx, dy, this.l, this.h);
     return this.h;
   }
+  update()
+  {
+    super.update();
+    this.nameTag.html(String(this.name+"_"+this.nID+"    [ "+this.st+" : "+this.inc+" : "+ this.end +" ] "));
+  }
 }
 
 /// Module ///
 class Module extends GUIObject {
-  constructor(x, y,nId) {
+  constructor(x, y) {
     super(x, y, 500, 800);
+    this.SeqObj =[];
     this.Rf = [];
     this.Gx = [];
     this.Gy = [];
@@ -253,19 +358,22 @@ class Module extends GUIObject {
     this.spacingY = 100;
     this.col = [256, 256, 256];
     this.axisL=720;
-    
-    
+    this.name="Module";
+    this.type=1;
+    this.nameTag.html(String(this.name+" "+String(this.nID)));
+    this.nameTag.show();
     // print(this.posX);
-    let tmp = new Gradient(0, 0, 1, random(-50, 50));
-    this.Gx.push(tmp);
-    tmp = new Gradient(0, 0, 2, random(-50, 50));
-    this.Gy.push(tmp);
+    let tmp = new Gradient(0, 0, 2, random(-50, 50));
+    this.SeqObj.push(tmp);
     tmp = new Gradient(0, 0, 3, random(-50, 50));
-    this.Gz.push(tmp);
-    tmp = new RF(0, 0, 0, -50);
-    this.Rf.push(tmp);
-    tmp = new ADC(300, 0, 0, -50);
-    this.Rf.push(tmp);
+    this.SeqObj.push(tmp);
+    tmp = new Gradient(0, 0, 4, random(-50, 50));
+    this.SeqObj.push(tmp);
+    tmp = new RF(0, 0, 1, -50);
+    this.SeqObj.push(tmp);
+    tmp = new ADC(300, 0, 1, -50);
+    this.SeqObj.push(tmp);
+    
     
     this.buttonGx = createButton('+');
     this.buttonGx.position(this.posX+this.axisL,             this.posY+this.spacingY);
@@ -292,6 +400,55 @@ class Module extends GUIObject {
     this.buttonADC.id(this.nID+"_"+5);
     this.buttonADC.mousePressed(plusObject);
   }
+  getLabel()
+  {
+    let dat=[];
+    dat.type_name=String(this.name+'_'+this.nID);
+    dat.l1='Amp';
+    dat.l2='Rup';
+    dat.l3='Flat';
+    dat.l4='Rdw';
+    dat.l5='Start Time';
+    return dat;
+  }
+  getData()
+  {
+       
+    let dat =[];
+    let tmp = [];
+    for (let p = 0; p < this.SeqObj.length; p++) {
+      tmp=this.SeqObj[p].getData();
+      dat.push(tmp);
+    }
+4
+    return dat;
+  }
+  setData(dat)
+  {
+    //print('Hello'+String(dat.nID));
+     for (let p = 0; p < this.SeqObj.length; p++)
+     {
+       if(dat.nID==this.SeqObj[p].nID)
+       {
+         this.SeqObj[p].setData(dat);    
+       }    
+    }
+
+    this.update();
+  }
+  update()
+  {
+    super.update();
+    let lMax=800;
+    for (let p = 0; p < this.SeqObj.length; p++)
+    {
+         lMax=max(lMax,this.SeqObj[p].posX+this.SeqObj[p].duration);       
+    }
+  
+    this.axisL=lMax;
+    this.l=lMax+80;
+    
+  }
   updateID(k)
   {
     super.updateID(k);
@@ -306,15 +463,15 @@ class Module extends GUIObject {
   {
     if (n==1)
     {
-        this.addGx();
+        this.addObj(n);
     }
     else if (n==2)
     {
-        this.addGy();
+        this.addObj(n);
     }
     else if (n==3)
     {
-        this.addGz();
+        this.addObj(n);
     }
     else if (n==4)
     {
@@ -326,67 +483,54 @@ class Module extends GUIObject {
     }
     
   }
-  addGx()
+  addObj(k)
   {
 
     
-   let lx=this.Gx[this.Gx.length-1].posX+this.Gx[this.Gx.length-1].duration;
-    let tmp = new Gradient(lx+20, 0, 1, random(-50, 50));
-    this.Gx.push(tmp);
+    let lx=0;
+    if(Object.keys(this.SeqObj).length != 0)
+    {
+     lx=this.SeqObj[this.SeqObj.length-1].posX+this.SeqObj[this.SeqObj.length-1].duration;
+    }
+    let tmp = new Gradient(lx+20, 0, k+1, random(-50, 50));
+    this.SeqObj.push(tmp);
+    this.update();
     
   }
 
-  addGy()
-  {
-    let lx=this.Gy[this.Gy.length-1].posX+this.Gy[this.Gy.length-1].duration;
-    let tmp = new Gradient(lx+20, 0, 2, random(-50, 50));
-    this.Gy.push(tmp);
-  }
-  addGz()
-  {
-    let lx=this.Gz[this.Gz.length-1].posX+this.Gz[this.Gz.length-1].duration;
-    let tmp = new Gradient(lx+20, 0, 1, random(-50, 50));
-    this.Gz.push(tmp);
-  }
+
   addRf()
   {
-    let lx=this.Rf[this.Rf.length-1].posX+this.Rf[this.Rf.length-1].duration;
-    let tmp = new RF(lx+20, 0, 0, -50);
-    this.Rf.push(tmp);
+    let lx=0;
+    if(Object.keys(this.SeqObj).length != 0)
+    {
+     lx=this.SeqObj[this.SeqObj.length-1].posX+this.SeqObj[this.SeqObj.length-1].duration+20;
+    } 
+    let tmp = new RF(lx, 0, 1, -50);
+    this.SeqObj.push(tmp);
+     this.update();
   }
   addADC()
   {
-    let lx=this.Rf[this.Rf.length-1].posX+this.Rf[this.Rf.length-1].duration;
-    let tmp = new ADC(lx+20, 0, 0, -50);
-    this.Rf.push(tmp);
+    let lx=0;
+    if(Object.keys(this.SeqObj).length != 0)
+    {
+     lx=this.SeqObj[this.SeqObj.length-1].posX+this.SeqObj[this.SeqObj.length-1].duration+20;
+    } 
+    let tmp = new ADC(lx, 0, 1, -50);
+    this.SeqObj.push(tmp);
+     this.update();
   }
   show(dx, dy) 
   {
     let h = super.show(dx, dy);
-    for (let p = 0; p < this.Gx.length; p++) {
-      this.Gx[p].show(
+    for (let p = 0; p < this.SeqObj.length; p++) {
+      this.SeqObj[p].show(
         this.posX + this.spacingX + dx,
-        this.posY + this.spacingY * 2
-      );
+        this.posY 
+      ); //+ this.spacingY * 2
     }
-    for (let p = 0; p < this.Gy.length; p++) {
-      this.Gy[p].show(
-        this.posX + this.spacingX + dx,
-        this.posY + this.spacingY * 3
-      );
-    }
-    for (let p = 0; p < this.Gz.length; p++) {
-      this.Gz[p].show(
-        this.posX + this.spacingX + dx,
-        this.posY + this.spacingY * 4
-      );
-    }
-    for (let p = 0; p < this.Rf.length; p++) {
-      this.Rf[p].show(
-        this.posX + this.spacingX + dx,
-        this.posY + this.spacingY * 1
-      );
-    }
+
     for (let p = 1; p < 5; p++) {
       stroke(0);
       strokeWeight(2);
@@ -417,45 +561,45 @@ class Module extends GUIObject {
   }
   destruct()
   {
-    
+     if (!this.childSelected) 
+    {
+      this.nameTag.remove();
+      this.buttonGx.remove();
+      this.buttonGy.remove();
+      this.buttonGz.remove();
+      this.buttonRf.remove();
+      this.buttonADC.remove();
+      
+      return true;
+    }
+    else
+    {
+      for (let p = this.SeqObj.length-1; p >= 0; p--) {
+        if (this.SeqObj[p].isDoubleSelected) 
+        {
+          this.SeqObj.splice(p,1);
+        }
+      }
+
+    }
+    return false;
   }
   isDoubleClick(moX, moY)
   {
     if (this.isDoubleSelected) 
     {
-      for (let p = 0; p < this.Gx.length; p++) {
-        if (this.Gx[p].isClick(moX, moY)) {
-          this.Gx[p].isDoubleSelected = true;
+      for (let p = 0; p < this.SeqObj.length; p++) {
+        if (this.SeqObj[p].isClick(moX, moY)) {
+          this.SeqObj[p].isDoubleSelected = true;
           this.childSelected = true;
         }
       }
-      for (let p = 0; p < this.Gy.length; p++) {
-        if (this.Gy[p].isClick(moX, moY)) {
-          this.Gy[p].isDoubleSelected = true;
-          this.childSelected = true;
-        }
-      }
-      for (let p = 0; p < this.Gz.length; p++) {
-        if (this.Gz[p].isClick(moX, moY)) {
-          this.Gz[p].isDoubleSelected = true;
-          this.childSelected = true;
-        }
-      }
-      for (let p = 0; p < this.Rf.length; p++) {
-        if (this.Rf[p].isClick(moX, moY)) {
-          this.Rf[p].isDoubleSelected = true;
-          this.childSelected = true;
-        }
-      }
+    
     }
     
     if (!this.childSelected) 
     {
-      /*if (super.isClick(moX, moY));
-      {
-        this.table= new TableUI(0,0,0,0,0,0);
-        return true;
-      }*/
+  
       return super.isDoubleClick(moX, moY); 
     } 
     
@@ -464,38 +608,17 @@ class Module extends GUIObject {
   isClick(moX, moY) {
     if (this.isDoubleSelected&&!this.isSelected) 
     {
-      for (let p = 0; p < this.Gx.length; p++) {
-        if (this.Gx[p].isClick(moX, moY)) {
-          this.Gx[p].isSelected = true;
+      for (let p = 0; p < this.SeqObj.length; p++) {
+        if (this.SeqObj[p].isClick(moX, moY)) {
+          this.SeqObj[p].isSelected = true;
           this.childSelected = true;
         }
       }
-      for (let p = 0; p < this.Gy.length; p++) {
-        if (this.Gy[p].isClick(moX, moY)) {
-          this.Gy[p].isSelected = true;
-          this.childSelected = true;
-        }
-      }
-      for (let p = 0; p < this.Gz.length; p++) {
-        if (this.Gz[p].isClick(moX, moY)) {
-          this.Gz[p].isSelected = true;
-          this.childSelected = true;
-        }
-      }
-      for (let p = 0; p < this.Rf.length; p++) {
-        if (this.Rf[p].isClick(moX, moY)) {
-          this.Rf[p].isSelected = true;
-          this.childSelected = true;
-        }
-      }
+ 
     }
     if (!this.childSelected) 
     {
-      /*if (super.isClick(moX, moY));
-      {
-        this.table= new TableUI(0,0,0,0,0,0);
-        return true;
-      }*/
+     
       return super.isClick(moX, moY);
       
     } 
@@ -506,53 +629,30 @@ class Module extends GUIObject {
   doubleSelect_()
   {
      super.doubleSelect_();
-     this.table.populate(0,0,0,0);
+
   }
   doubleUnselect()
   {
     super.doubleUnselect();
-    this.table.destruct();
     
     this.isDoubleSelected = false;
     this.childSelected = false;
-    for (let p = 0; p < this.Gx.length; p++) {
+    for (let p = 0; p < this.SeqObj.length; p++) {
      
-      this.Gx[p].doubleUnselect();
+      this.SeqObj[p].doubleUnselect();
     }
-    for (let p = 0; p < this.Gy.length; p++) {
-     
-      this.Gy[p].doubleUnselect();
-    }
-    for (let p = 0; p < this.Gz.length; p++) {
-     
-      this.Gz[p].doubleUnselect();
-    }
-    for (let p = 0; p < this.Rf.length; p++) {
-     
-      this.Rf[p].doubleUnselect();
-    }
+    
   }
   unselect() {
  
     
     this.isSelected = false;
     this.childSelected = false;
-    for (let p = 0; p < this.Gx.length; p++) {
-      this.Gx[p].unselect();
-      this.Gx[p].doubleUnselect();
+    for (let p = 0; p < this.SeqObj.length; p++) {
+      this.SeqObj[p].unselect();
+      this.SeqObj[p].doubleUnselect();
     }
-    for (let p = 0; p < this.Gy.length; p++) {
-      this.Gy[p].unselect();
-      this.Gy[p].doubleUnselect();
-    }
-    for (let p = 0; p < this.Gz.length; p++) {
-      this.Gz[p].unselect();
-      this.Gz[p].doubleUnselect();
-    }
-    for (let p = 0; p < this.Rf.length; p++) {
-      this.Rf[p].unselect();
-      this.Rf[p].doubleUnselect();
-    }
+   
     
   }
   dragged(dx, dy) {
@@ -563,65 +663,10 @@ class Module extends GUIObject {
       let intersect = false;
       let ob;
       let other;
-      for (ob of this.Gx) 
+      for (ob of this.SeqObj) 
       {
         intersect = false;
-        for (other of this.Gx) 
-        {
-          if (ob != other) 
-          {
-            intersect = ob.intersect(other, dx, dy);
-            if(intersect)
-            {
-                break;
-            }
-          }
-        }
-        if (!intersect) {
-          ob.dragged(dx, dy);
-        }
-      }
-      for (ob of this.Gy) 
-      {
-        intersect = false;
-        for (other of this.Gy) 
-        {
-          if (ob != other) 
-          {
-            intersect = ob.intersect(other, dx, dy);
-            if(intersect)
-            {
-                break;
-            }
-          }
-        }
-        if (!intersect) {
-          ob.dragged(dx, dy);
-        }
-      }
-      for (ob of this.Gz) 
-      {
-        intersect = false;
-        for (other of this.Gz) 
-        {
-          if (ob != other) 
-          {
-            intersect = ob.intersect(other, dx, dy);
-            if(intersect)
-            {
-                break;
-            }
-          }
-        }
-        if (!intersect) {
-          ob.dragged(dx, dy);
-        }
-      }
-
-      for (ob of this.Rf) 
-      {
-        intersect = false;
-        for (other of this.Rf) 
+        for (other of this.SeqObj) 
         {
           if (ob != other) 
           {
@@ -637,6 +682,8 @@ class Module extends GUIObject {
         }
       }
     }
+     
+     this.update();
   }
 }
 
