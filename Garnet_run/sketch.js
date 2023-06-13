@@ -234,7 +234,7 @@ function generateLib()
 function draw() 
 {
 
-  background(255);
+  background(255,255,255);
   fill(255,255,255);
   square(10, 40, 180);
   fill(255,255,255);
