@@ -5,6 +5,7 @@ class GUIObject {
     this.posY = y;
     this.h = dx;
     this.l = dy;
+    this.SeqObj =[];
     this.isSelected = false;
     this.childSelected = false;
     this.isDoubleSelected = false;
@@ -13,7 +14,7 @@ class GUIObject {
     this.col = [random(0, 255), random(0, 255), random(0, 255)];
     this.dx = 0;
     this.dy = 0;
-    this.nID=0;
+    this.nID=newID();
     this.name="name";
     this.nameTag = createDiv(this.name);
     this.nameTag.style('font-size', '16px');
@@ -129,7 +130,7 @@ class GUIObject {
   }
   update()
   {
-    this.nameTag.html(String(this.name+"_"+String(this.nID)));
+    this.nameTag.html(String(this.name));
   }
   updateID(k)
   {
@@ -139,6 +140,10 @@ class GUIObject {
   eventID(k,n)
   {
   }
+  getChild()
+  {
+    
+  }
 }
 
 class Probe extends GUIObject {
@@ -147,7 +152,7 @@ class Probe extends GUIObject {
     this.r = (3 * this.l) / 6;
     this.isLooper = false;
     this.col = color(random(0, 255), random(0, 255), random(0, 255));
-    this.name="Probe";
+    this.name="Probe_"+String(this.nID);
     this.type=3;
   }
   shapeShow() {
@@ -200,7 +205,7 @@ class Probe extends GUIObject {
    getLabel()
   {
     let dat=[];
-    dat.type_name=String(this.name+'_'+this.nID);
+    dat.type_name=String(this.name);
     dat.l1='';
     dat.l2='';
     dat.l3='Shot';
@@ -273,9 +278,9 @@ class Looper extends GUIObject {
   constructor(x, y) {
     super(x, y, 40, 200);
     this.isLooper = true;
-    this.name="Loop";
+    this.name="Loop_"+String(this.nID);
     this.type=2;
-    this.nameTag.html(String(this.name+" "+String(this.nID)));
+    this.nameTag.html(this.name);
     this.nameTag.show();
     this.st=0;
     this.inc=1;
@@ -286,18 +291,18 @@ class Looper extends GUIObject {
   getLabel()
   {
     let dat=[];
-    dat.type_name=String(this.name+'_'+this.nID);
+    dat.type_name=(this.name);
     dat.l1='Start';
     dat.l2='Stop';
     dat.l3='Incr';
     dat.l4='';
-    dat.l5='';
+    dat.l5='Display';
     return dat;
   }
   getData()
   {
     let dat=[];
-    dat.name=String(this.name);
+    dat.name=(this.name);
     dat.v1=this.st;
     dat.v2=this.inc;
     dat.v3=this.end;
@@ -339,7 +344,7 @@ class Looper extends GUIObject {
   update()
   {
     super.update();
-    this.nameTag.html(String(this.name+"_"+this.nID+"    [ "+this.st+" : "+this.inc+" : "+ this.end +" ] "));
+    this.nameTag.html(String(this.name+"    [ "+this.st+" : "+this.inc+" : "+ this.end +" ] "));
   }
 }
 
@@ -347,7 +352,7 @@ class Looper extends GUIObject {
 class Module extends GUIObject {
   constructor(x, y) {
     super(x, y, 500, 800);
-    this.SeqObj =[];
+    
     this.Rf = [];
     this.Gx = [];
     this.Gy = [];
@@ -358,10 +363,12 @@ class Module extends GUIObject {
     this.spacingY = 100;
     this.col = [256, 256, 256];
     this.axisL=720;
-    this.name="Module";
+    this.name="Module_"+String(this.nID);
     this.type=1;
-    this.nameTag.html(String(this.name+" "+String(this.nID)));
+    this.childId=0;
+    this.nameTag.html(this.name);
     this.nameTag.show();
+    this.sortIdx=[];
     // print(this.posX);
     let tmp = new Gradient(0, 0, 2, random(-50, 50));
     this.SeqObj.push(tmp);
@@ -403,7 +410,7 @@ class Module extends GUIObject {
   getLabel()
   {
     let dat=[];
-    dat.type_name=String(this.name+'_'+this.nID);
+    dat.type_name=(this.name);
     dat.l1='Amp';
     dat.l2='Rup';
     dat.l3='Flat';
@@ -420,8 +427,18 @@ class Module extends GUIObject {
       tmp=this.SeqObj[p].getData();
       dat.push(tmp);
     }
-4
     return dat;
+  }
+  getChild()
+  {
+      let dat=this.SeqObj[this.childId].getEq();
+     // dat=this.SeqObj[this.childId].name;
+     // print(dat);
+      return dat;
+  }
+  setChild(data)
+  {
+      this.SeqObj[this.childId].setEq(data);
   }
   setData(dat)
   {
@@ -442,11 +459,45 @@ class Module extends GUIObject {
     let lMax=800;
     for (let p = 0; p < this.SeqObj.length; p++)
     {
+        this.SeqObj[p].update();
          lMax=max(lMax,this.SeqObj[p].posX+this.SeqObj[p].duration);       
     }
   
     this.axisL=lMax;
     this.l=lMax+80;
+    this.sortTable();
+  }
+  sortTable()
+  {
+    let list=[];
+    let idx_test=[];
+    this.sortIdx=[];
+    for (let p = 0; p < this.SeqObj.length; p++)
+    {
+      list.push(this.SeqObj[p].start);
+      idx_test.push(p); 
+    }
+  //  print(list[0])
+    let mmin=99999999999;
+    let tmp_idx=[];
+    
+    while(idx_test.length>0)
+    {
+          mmin=99999999999;
+          for(let k=0; k<idx_test.length;k++)
+          {
+              if (list[k]<mmin)
+              {
+                  
+                  mmin=list[k];
+                  tmp_idx=k;
+              }           
+          }
+          
+          this.sortIdx.push(idx_test[tmp_idx]);
+          idx_test.splice(tmp_idx,1);
+          list.splice(tmp_idx,1);
+    }
     
   }
   updateID(k)
@@ -457,7 +508,6 @@ class Module extends GUIObject {
     this.buttonGz.id(this.nID+"_"+3);
     this.buttonRf.id(this.nID+"_"+4);
     this.buttonADC.id(this.nID+"_"+5);
-    
   }
   eventID(n)
   {
@@ -574,13 +624,13 @@ class Module extends GUIObject {
     }
     else
     {
-      for (let p = this.SeqObj.length-1; p >= 0; p--) {
+      for (let p = this.SeqObj.length-1; p >= 0; p--) 
+      {
         if (this.SeqObj[p].isDoubleSelected) 
         {
           this.SeqObj.splice(p,1);
         }
       }
-
     }
     return false;
   }
@@ -592,6 +642,7 @@ class Module extends GUIObject {
         if (this.SeqObj[p].isClick(moX, moY)) {
           this.SeqObj[p].isDoubleSelected = true;
           this.childSelected = true;
+          this.childId=p;
         }
       }
     

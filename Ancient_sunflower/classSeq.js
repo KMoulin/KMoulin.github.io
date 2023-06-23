@@ -4,8 +4,8 @@ class Gradient extends GUIObject {
     super(x, y, amp, 200);
 
     this.posY = y+axis*100;
-    this.posX = x;
-
+    this.start = x;
+    this.type=1;
     this.amp = amp;
     this.ramp1 = 50;
     this.flat = 100;
@@ -15,51 +15,117 @@ class Gradient extends GUIObject {
     this.shiftX = 0;
     this.shiftY = 0;
     this.col = [255, 255, 255];
-    this.nID=newID();
-    this.name="Grad";
+    this.name="Grad_"+String(this.nID);
+    this.isCompiled=false;
+    this.isValid=true;
+    this.end=this.start+this.duration;
+    this.nPoint=0;
+    this.px=[];
+    this.py2=[];
+    this.py=[];
+    
     if(this.axis==2)
     {
-          this.name="Gx";
+          this.name="Gx_"+String(this.nID);
     }
     else if(this.axis==3)
     {
-          this.name="Gy";
+          this.name="Gy_"+String(this.nID);
     }
     else if(this.axis==4)
     {
-          this.name="Gz";
+          this.name="Gz_"+String(this.nID);
     }
-    
+    this.Eq_amp=String(this.amp);
+    this.Eq_ramp1=String(this.ramp1);
+    this.Eq_flat=String(this.flat);
+    this.Eq_ramp2=String(this.ramp2);
+    this.Eq_start=String(this.start);
   }
-  show(dx, dy) {
+  computeContent(content)
+  {
+    
+    let text2=content.replace(new RegExp('<br>', "g"), "");
+    let textS=split(text2,';'); 
+    try 
+    {
+      for (let k=0;k<textS.length;k++)
+      {
+        eval(textS[k]);
+      }
+    }
+    catch
+    {
+      print('Error')
+      return false;  
+    }
+   
+    return true;
+  }
+  show(dx, dy)
+  {
     this.dx = dx;
     this.dy = dy;
-    if (this.isSelected) {
+    if (this.isSelected)
+    {
       fill(255, 204, 0);
-    } else {
-      fill(this.col);
     }
-    if (this.isDoubleSelected) {
+    else
+    {
+      if(!this.isCompiled & this.isValid) 
+      {
+         fill(this.col);
+      }
+      else if (!this.isCompiled & !this.isValid)
+      {
+          fill(this.col);
+      }
+      else if(this.isCompiled & !this.isValid) 
+      {
+        fill(255, 0, 0);
+      }
+      else
+      {
+        fill(0, 255, 0);
+      }
+    }
+    if (this.isDoubleSelected) 
+    {
       stroke(255, 0, 0);
       strokeWeight(4);
-    } else {
-      stroke(0);
-      strokeWeight(2);
     }
-    quad(
-      this.posX + this.dx,
-      this.posY + this.dy, // begining of the ramp
-      this.posX + this.ramp1 + this.dx,
-      this.posY + this.amp + this.dy, // end of the ramp, begining of the flat
-      this.posX + this.flat + this.ramp1 + this.dx,
-      this.posY + this.amp + this.dy,
-      this.posX + this.ramp1 + this.flat + this.ramp2 + this.dx,
-      this.posY + this.dy
-    );
+    else
+    {
+        stroke(0, 0, 0);
+       strokeWeight(2);
+     }
+   
+    if(this.nPoint==0)
+    {
+      quad(
+        this.start + this.dx,
+        this.posY + this.dy, // begining of the ramp
+        this.start + this.ramp1 + this.dx,
+        this.posY + this.amp + this.dy, // end of the ramp, begining of the flat
+        this.start + this.flat + this.ramp1 + this.dx,
+        this.posY + this.amp + this.dy,
+        this.start + this.ramp1 + this.flat + this.ramp2 + this.dx,
+        this.posY + this.dy
+      );
+    }
+    else
+    {
+        beginShape();
+        for (let pt = 0; pt < this.nPoint; pt++)
+        {
+          vertex(this.start + this.px[pt] + dx, this.posY + this.py[pt] + dy);
+        }
+        endShape();
+    }
   }
  
   isClick(moX, moY) {
-    if (moX >= this.posX + this.dx && moX <= this.posX + this.l + this.dx) {
+    if (moX >= this.start + this.dx && moX <= this.start + this.l + this.dx) {
       if (
         moY >= this.posY + this.dy &&
         moY <= this.posY + this.amp + this.dy &&
@@ -78,24 +144,28 @@ class Gradient extends GUIObject {
     return false;
   }
   dragged(dx, dy) {
-    if (this.isSelected) {
-      this.posX += dx;
-      if (this.posX < 0) {
-        this.posX = 0;
+    if (this.isSelected) 
+    {
+      this.isCompiled =false;
+      this.start += dx;
+      if (this.start < 0) 
+      {
+        this.start = 0;
       }
-      if (this.posX > 1000) {
-        this.posX = 1000;
+      if (this.start > 1000) 
+      {
+        this.start = 1000;
       }
     }
   }
   intersect(ob, dx, dy) {
     if(this.axis!=ob.axis) return false;
-    if (this.posX + dx > ob.posX && this.posX + dx < ob.posX + ob.duration) {
+    if (this.start + dx > ob.start && this.start + dx < ob.start + ob.duration) {
       return true;
     }
     if (
-      this.posX + this.duration + dx > ob.posX &&
-      this.posX + this.duration + dx < ob.posX + ob.duration
+      this.start + this.duration + dx > ob.start &&
+      this.start + this.duration + dx < ob.start + ob.duration
     ) {
       return true;
     }
@@ -110,9 +180,32 @@ class Gradient extends GUIObject {
     data.v2=this.ramp1;
     data.v3=this.flat;
     data.v4=this.ramp2;
-    data.v5=this.posX;
+    data.v5=this.start;
     
     return data;
+  }
+  getEq()
+  {
+     let data=[];
+    data.name =this.name;
+    data.nID=this.nID;
+    data.Eq1=this.Eq_amp;
+    data.Eq2=this.Eq_ramp1;
+    data.Eq3=this.Eq_flat;
+    data.Eq4=this.Eq_ramp2;
+    data.Eq5=this.Eq_start;
+    
+    return data;
+  }
+  setEq(data)
+  {
+     
+    this.Eq_amp=data.Eq1;
+    this.Eq_ramp1=data.Eq2;
+    this.Eq_flat=data.Eq3;
+    this.Eq_ramp2=data.Eq4;
+    this.Eq_start=data.Eq5;
+
   }
   setData(data)
   {
@@ -122,21 +215,29 @@ class Gradient extends GUIObject {
     this.ramp1=Number(data.v2);
     this.flat=Number(data.v3);
     this.ramp2=Number(data.v4);
-    this.posX=Number(data.v5);
+    this.start=Number(data.v5);
     this.duration=this.ramp1+this.flat+this.ramp2;
     this.update();
   }
   update()
   {
-    
+     this.duration = this.ramp1 + this.flat + this.ramp2;
+     this.end = this.start + this.duration;
+     this.nPoint=this.py.length;
+     this.px=[];
+      for (let pt = 0; pt < this.nPoint; pt++)
+      {
+        this.px[pt]=this.duration*pt/this.nPoint;  
+      }
+      
   }
-  //let posX,posY;
+  //let start,posY;
 }
 
 class RF extends Gradient {
   constructor(x, y, axis, amp) {
     super(x, y, axis, amp);
-
+    this.type=2;
     this.ramp1 = 0;
     this.flat = 200;
     this.ramp2 = 0;
@@ -144,19 +245,33 @@ class RF extends Gradient {
     this.py = [];
     this.dT = 1;
     this.nPoint = this.duration / this.dT;
-    this.name="RF";
-   
-    
+    this.name="RF_"+String(this.nID);
+    this.freq=0;
+    this.phase=0;
     this.update();
     // this.col=[random(0,255),random(0,255),random(0,255)];
   }
   show(dx, dy) {
     this.dx = dx;
     this.dy = dy;
-    if (this.isSelected) {
+    if (this.isSelected) 
+    {
       fill(255, 204, 0);
-    } else {
-      fill(this.col);
+    } 
+    else 
+    {
+      if(!this.isCompiled & this.isValid)
+      {
+         fill(this.col);
+      }
+      else if(this.isCompiled & !this.isValid) 
+      {
+        fill(255, 0, 0);
+      }
+      else
+      {
+        fill(0, 255, 0);
+      }
     }
    if (this.isDoubleSelected) {
       stroke(255, 0, 0);
@@ -167,13 +282,13 @@ class RF extends Gradient {
     }
     beginShape();
     for (let pt = 0; pt < this.nPoint; pt++) {
-      curveVertex(this.posX + this.px[pt] + dx, this.posY + this.py[pt] + dy);
+      curveVertex(this.start + this.px[pt] + dx, this.posY + this.py[pt] + dy);
     }
 
     endShape();
   }
   isClick(moX, moY) {
-    if (moX >= this.posX + this.dx && moX <= this.posX + this.l + this.dx) {
+    if (moX >= this.start + this.dx && moX <= this.start + this.l + this.dx) {
       if (moY >= this.posY + this.dy && moY <= this.posY + this.h + this.dy) {
         return true;
       }
@@ -203,11 +318,16 @@ class RF extends Gradient {
 class ADC extends Gradient {
   constructor(x, y, axis, amp) {
     super(x, y, axis, amp);
-
+    this.type=3;
     this.ramp1 = 0;
     this.flat = 200;
     this.ramp2 = 0;
-    this.name="ADC";
+    this.name="ADC_"+String(this.nID);
+ 
+    this.num=64;
+    this.dwell=100000;
+    this.freq=0;
+    this.phase=0;
     // this.col=[random(0,255),random(0,255),random(0,255)];
   }
 }

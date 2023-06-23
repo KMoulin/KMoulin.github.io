@@ -5,3 +5,12 @@ html, body {
 canvas {
   display: block;
 }
+div.editor 
+{
+     border: 4px; 
+}
+div.editor:focus 
+{
+     border: 4px;
+     background-color: yellow;
+}

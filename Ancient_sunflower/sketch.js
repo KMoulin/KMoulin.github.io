@@ -18,20 +18,19 @@ function setup()
   ID_manager=0;
   lManager = new layoutManager(400,50);
   lManager.addLoop();
-  lManager.addLoop();
+ // lManager.addLoop();
   lManager.addModule();
-  lManager.addProbe();
-  lManager.addLoop();
-  lManager.addLoop();
-  lManager.addModule();
-  
+ // lManager.addProbe();
+ // lManager.addLoop();
+  //lManager.addLoop();
+  //lManager.addModule();
   
 //  blendMode(DIFFERENCE    );
 }
 
 function draw() 
 {
- 
+  
   background(256);
    
   lManager.show();
@@ -124,4 +123,20 @@ function newID()
 {
   ID_manager=ID_manager+1;
   return ID_manager;
+}
+function PulSeq()
+{
+  lManager.exportPulSeq();
+}
+function compileScript()
+{
+   lManager.compileScript();
+}
+function Obj(nameID)
+{
+  return lManager.getObj(nameID);
+}
+function Update()
+{
+  lManager.update();
 }
