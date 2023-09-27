@@ -10,7 +10,7 @@ let varP;
 let pInfo;
 let pFA;
 function setup() {
-  createCanvas(750, 750, WEBGL);
+  createCanvas(2000, 1000, WEBGL);
   angleMode(DEGREES);
   
  // sliderT1 = createSlider(1, 100, 60);
