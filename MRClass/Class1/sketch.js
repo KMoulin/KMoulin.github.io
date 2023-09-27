@@ -83,7 +83,7 @@ function setup() {
  
   sliderOff.style('width', '80px');
    sliderT.style('width', '80px');
-  pB0.html( String("T1 = " +String(sliderB0.value())+ "T"));
+  pB0.html( String("B0 = " +String(sliderB0.value())+ "T"));
   pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
   pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
   Tilt=0;
