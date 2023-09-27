@@ -19,7 +19,7 @@ let ObjM=[];
 let pg;
 
 function setup() {
-  createCanvas(750, 750, WEBGL);
+  createCanvas(2000, 1000, WEBGL);
 
   angleMode(DEGREES);
   sliderB0 = createSlider(0, 15, 0);
