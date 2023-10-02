@@ -17,7 +17,7 @@ let Off=10;
 let ObjP=[];
 let ObjM=[];
 let pg;
-let TimeScale=3;
+let TimeScale=7;
 
 function setup() {
   createCanvas(2000, 1000, WEBGL);
