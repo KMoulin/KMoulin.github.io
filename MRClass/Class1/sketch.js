@@ -17,6 +17,7 @@ let Off=10;
 let ObjP=[];
 let ObjM=[];
 let pg;
+let TimeScale=3;
 
 function setup() {
   createCanvas(2000, 1000, WEBGL);
@@ -32,22 +33,22 @@ function setup() {
   
   
    
-  sliderOff = createSlider(0, 90, 10);
-  sliderOff.position(10, height + 25 -250);
-  sliderOff.mousePressed(changeSlider);
-  sliderOff.mouseReleased(changeSlider);
-  pOff = createDiv('Offresonance =');
-  pOff.style('font-size', '16px');
-  pOff.position(100, height + 25 -250);
+  //sliderOff = createSlider(0, 90, 10);
+  //sliderOff.position(10, height + 25 -250);
+  //sliderOff.mousePressed(changeSlider);
+  //sliderOff.mouseReleased(changeSlider);
+  //pOff = createDiv('Offresonance =');
+  //pOff.style('font-size', '16px');
+  //pOff.position(100, height + 25 -250);
   
   
-  sliderT = createSlider(1, 100, 5);
-  sliderT.position(10, height + 45 -250);
-  sliderT.mousePressed(changeSlider);
-  sliderT.mouseReleased(changeSlider);
-  pT = createDiv('Time ratio =');
-  pT.style('font-size', '16px');
-  pT.position(100, height + 45 -250);
+ // sliderT = createSlider(1, 100, 5);
+ // sliderT.position(10, height + 45 -250);
+ // sliderT.mousePressed(changeSlider);
+//  sliderT.mouseReleased(changeSlider);
+//  pT = createDiv('Time ratio =');
+//  pT.style('font-size', '16px');
+//  pT.position(100, height + 45 -250);
   
   pFrame = createDiv('Frame Rate =');
   pFrame.style('font-size', '16px');
@@ -61,7 +62,7 @@ function setup() {
        for(let cptz=-5;cptz<5;cptz++)
       {   
         varP =new Path(cptx*200,cpty*200,cptz*200);
-        varP.freeprecess(5/5,T1,T2,1,sliderB0.value());
+        varP.freeprecess(5/TimeScale,T1,T2,1,sliderB0.value());
         ObjP.push(varP);
       }
     }  
@@ -81,11 +82,11 @@ function setup() {
  // varP.add(random(0,150),random(0,150),random(0,150));
   sliderB0.style('width', '80px');
  
-  sliderOff.style('width', '80px');
-   sliderT.style('width', '80px');
+ // sliderOff.style('width', '80px');
+ //  sliderT.style('width', '80px');
   pB0.html( String("B0 = " +String(sliderB0.value())+ "T"));
-  pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
-  pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
+//  pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
+ // pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
   Tilt=0;
   describe(
     'a rotating white cylinder with limited Y detail, with a slider that adjusts detailY'
@@ -157,16 +158,16 @@ function draw() {
 function changeSlider()
 {
   
- pB0.html( String("T1 = " +String(sliderB0.value())+ "T"));
+ pB0.html( String("B0 = " +String(sliderB0.value())+ "T"));
 
-  pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
-  pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
+//  pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
+//  pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
   //varP.freeprecess(5/sliderT.value(),T1,T2,Off);
   //varP2.freeprecess(5/sliderT.value(),T1,T2,Off);
-  
+//  TimeScale=sliderT.value();
     for (let cpt=0;cpt<ObjP.length;cpt++)
     {
-        ObjP[cpt].freeprecess(5/sliderT.value(),T1,T2,1,sliderB0.value());
+        ObjP[cpt].freeprecess(5/TimeScale,T1,T2,1,sliderB0.value());
     }
 }
 
