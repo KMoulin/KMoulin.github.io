@@ -8,7 +8,7 @@ let pOff;
 let varP;
 let pFrame;
 let cptFrame=0;
-let Tilt=0;
+let Tilt=15;
 
 let T1=600;
 let T2=100;
@@ -17,7 +17,7 @@ let Off=10;
 let ObjP=[];
 let ObjM=[];
 let pg;
-let TimeScale=7;
+let TimeScale=3;
 
 function setup() {
   createCanvas(2000, 1000, WEBGL);
@@ -101,24 +101,6 @@ function draw() {
   orbitControl();
   ambientLight(60, 60, 60);
   pointLight(255, 255, 255, 45, 45, 100);
-  //normalMaterial();
-  
-  
-  //push();
- // specularMaterial(0, 0, 250);
-  //stroke(0,0,255);
- // rotateX(180);
- // translate(-1200, 0,0);
-  //cylinder(100,800*2);
- // translate(0,400*2+25*2,0);
- // cone(100*2, 100*2);
- // pop();
-  //rotateX(frameCount * 0.01);
-  //rotateY(frameCount * 0.01);
-  //box(300);
-  // rotateX(millis() / 1000);
- // rotateZ(millis() / 1000);
-  
   let Mx=0;
   let My=0;
   let Mz=0;
