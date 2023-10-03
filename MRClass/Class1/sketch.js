@@ -87,7 +87,7 @@ function setup() {
   pB0.html( String("B0 = " +String(sliderB0.value())+ "T"));
 //  pT.html( String("Time ratio = " +String(sliderT.value())+ ""));
  // pOff.html( String("Tilt = " +sliderOff.value()+ " degree"));
-  Tilt=0;
+
   describe(
     'a rotating white cylinder with limited Y detail, with a slider that adjusts detailY'
   );
