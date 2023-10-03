@@ -176,15 +176,15 @@ class Path {
      }
     else
     {
-      if(sliderOff.value()==0)
+      if(Tilt==0)
       {
           ax=90;
       }
       else
       {
-        if (abs(ax)>=(90-sliderOff.value()) )
+        if (abs(ax)>=(90-Tilt) )
         {
-          ax=90-sliderOff.value();
+          ax=90-Tilt;
         }
       }
     }
